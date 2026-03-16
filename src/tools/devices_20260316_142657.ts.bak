@@ -1,0 +1,135 @@
+/**
+ * Device tools — create and inspect audio devices in a Nexus project.
+ *
+ * Supported device types from SDK docs:
+ *   Instruments: heisenberg, pulverisateur, bassline, tonematrix
+ *   Effects:     stompboxDelay, stompboxReverb, stompboxDistortion
+ */
+
+import type { NexusBridge } from "../nexus-bridge.js";
+import type { McpTool } from "../types.js";
+
+// Documented device types from the @audiotool/nexus SDK
+const INSTRUMENT_TYPES = ["heisenberg", "pulverisateur", "bassline", "tonematrix"] as const;
+const EFFECT_TYPES = ["stompboxDelay", "stompboxReverb", "stompboxDistortion"] as const;
+const ALL_DEVICE_TYPES = [...INSTRUMENT_TYPES, ...EFFECT_TYPES] as const;
+
+export function registerDeviceTools(bridge: NexusBridge): McpTool[] {
+  return [
+    // ── nexus_create_device ───────────────────────────────────────────────────
+    {
+      name: "nexus_create_device",
+      description:
+        "Create an audio device (instrument or effect) in the current Nexus project. " +
+        "The device appears on the Audiotool modular desktop. " +
+        "Instruments: heisenberg, pulverisateur, bassline, tonematrix. " +
+        "Effects: stompboxDelay, stompboxReverb, stompboxDistortion. " +
+        "Position (x, y) is in pixels on the desktop canvas.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          device_type: {
+            type: "string",
+            enum: ALL_DEVICE_TYPES,
+            description:
+              "Nexus device type. Must be one of: " + ALL_DEVICE_TYPES.join(", "),
+          },
+          display_name: {
+            type: "string",
+            description: "Human-readable name shown on the device in the DAW.",
+          },
+          position_x: {
+            type: "number",
+            description: "X position on the modular desktop canvas (pixels). Default: 100.",
+          },
+          position_y: {
+            type: "number",
+            description: "Y position on the modular desktop canvas (pixels). Default: 150.",
+          },
+          params: {
+            type: "object",
+            description:
+              "Optional device-specific parameters. " +
+              "For stompboxDelay: feedbackFactor (0-1), mix (0-1), stepLengthIndex (int). " +
+              "For tonematrix: patternIndex (int). " +
+              "Other params depend on device type.",
+          },
+        },
+        required: ["device_type"],
+      },
+      handler: async (args) => {
+        const deviceType = String(args["device_type"] ?? "");
+        const displayName = String(args["display_name"] ?? `${deviceType}-1`);
+        const posX = Number(args["position_x"] ?? 100);
+        const posY = Number(args["position_y"] ?? 150);
+        const extraParams = (args["params"] ?? {}) as Record<string, unknown>;
+
+        if (!ALL_DEVICE_TYPES.includes(deviceType as (typeof ALL_DEVICE_TYPES)[number])) {
+          return {
+            success: false,
+            error: `Unknown device type: '${deviceType}'`,
+            valid_types: ALL_DEVICE_TYPES,
+          };
+        }
+
+        const createParams = {
+          displayName,
+          positionX: posX,
+          positionY: posY,
+          ...extraParams,
+        };
+
+        let createdId: string | null = null;
+
+        const result = await bridge.modify((t) => {
+          const device = t.create(deviceType, createParams);
+          createdId = device?.id ?? device?.location ?? null;
+        });
+
+        return {
+          ...result,
+          device_type: deviceType,
+          display_name: displayName,
+          position: { x: posX, y: posY },
+          created_id: createdId,
+          params_applied: extraParams,
+          note:
+            bridge.getMode() === "offline"
+              ? "Created in offline mode — not synced to Audiotool."
+              : "Created and synced to Audiotool project.",
+        };
+      },
+    },
+
+    // ── nexus_list_devices ────────────────────────────────────────────────────
+    {
+      name: "nexus_list_devices",
+      description:
+        "List all audio devices in the current project grouped by category " +
+        "(instruments and effects). Returns entity type, id, display name, and position.",
+      inputSchema: { type: "object", properties: {} },
+      handler: async () => {
+        bridge.requireSession();
+
+        const instruments: object[] = [];
+        const effects: object[] = [];
+
+        for (const t of INSTRUMENT_TYPES) {
+          const found = bridge.queryByType(t);
+          instruments.push(...found.map((e) => ({ ...e, category: "instrument" })));
+        }
+        for (const t of EFFECT_TYPES) {
+          const found = bridge.queryByType(t);
+          effects.push(...found.map((e) => ({ ...e, category: "effect" })));
+        }
+
+        return {
+          success: true,
+          total: instruments.length + effects.length,
+          instruments,
+          effects,
+        };
+      },
+    },
+  ];
+}

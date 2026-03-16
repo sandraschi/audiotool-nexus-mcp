@@ -1,0 +1,96 @@
+/**
+ * Cable tools — create audio routing between device sockets.
+ *
+ * Audiotool uses desktopAudioCable entities to connect device outputs
+ * to device inputs. The socket references (fromSocket, toSocket) come
+ * from device field locations in the Nexus document model.
+ */
+
+import type { NexusBridge } from "../nexus-bridge.js";
+import type { McpTool } from "../types.js";
+
+export function registerCableTools(bridge: NexusBridge): McpTool[] {
+  return [
+    // ── nexus_create_cable ────────────────────────────────────────────────────
+    {
+      name: "nexus_create_cable",
+      description:
+        "Create an audio cable between two device sockets in the current project. " +
+        "Cables route audio from one device's output to another device's input. " +
+        "from_socket and to_socket are location references from device fields " +
+        "(e.g. device.fields.audioOutput.location). " +
+        "Obtain socket locations via nexus_query_entities and inspect the 'fields' object. " +
+        "Typical socket names: audioOutput, audioInput, masterOutput, channelInput.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          from_socket: {
+            type: "string",
+            description:
+              "Location reference of the source socket (output). " +
+              "Example: 'entities/abc123/fields/audioOutput'",
+          },
+          to_socket: {
+            type: "string",
+            description:
+              "Location reference of the destination socket (input). " +
+              "Example: 'entities/def456/fields/audioInput'",
+          },
+        },
+        required: ["from_socket", "to_socket"],
+      },
+      handler: async (args) => {
+        const fromSocket = String(args["from_socket"] ?? "");
+        const toSocket = String(args["to_socket"] ?? "");
+
+        if (!fromSocket || !toSocket) {
+          return {
+            success: false,
+            error: "Both from_socket and to_socket are required.",
+            hint:
+              "Use nexus_query_entities to inspect device fields and find socket location references.",
+          };
+        }
+
+        let cableId: string | null = null;
+
+        const result = await bridge.modify((t) => {
+          const cable = t.create("desktopAudioCable", {
+            fromSocket,
+            toSocket,
+          });
+          cableId = cable?.id ?? cable?.location ?? null;
+        });
+
+        return {
+          ...result,
+          cable_id: cableId,
+          from_socket: fromSocket,
+          to_socket: toSocket,
+          note:
+            bridge.getMode() === "offline"
+              ? "Cable created in offline mode — not synced to Audiotool."
+              : "Cable created and synced to Audiotool project.",
+        };
+      },
+    },
+
+    // ── nexus_list_cables ─────────────────────────────────────────────────────
+    {
+      name: "nexus_list_cables",
+      description:
+        "List all audio cables (desktopAudioCable entities) in the current project. " +
+        "Shows the from/to socket connections for each cable.",
+      inputSchema: { type: "object", properties: {} },
+      handler: async () => {
+        bridge.requireSession();
+        const cables = bridge.queryByType("desktopAudioCable");
+        return {
+          success: true,
+          count: cables.length,
+          cables,
+        };
+      },
+    },
+  ];
+}

@@ -1,0 +1,213 @@
+/**
+ * NexusBridge — wraps @audiotool/nexus SDK for headless Node.js use.
+ *
+ * Auth reality (v0.0.12):
+ *   - The SDK's getLoginStatus() / login() flow is browser-only (OAuth popup/redirect).
+ *   - PAT support exists at developer.audiotool.com/personal-access-tokens but the
+ *     SDK integration for PATs in Node is still TBD per their docs ("will be a bit
+ *     more work for these platforms").
+ *   - Strategy: we try PAT auth if AUDIOTOOL_PAT env var is set.
+ *     If not set, we operate in OFFLINE mode (createOfflineDocument) so all
+ *     read-only and structural operations still work for testing/development.
+ *   - When the user provides a token after registering their OAuth app and generating
+ *     a PAT, set AUDIOTOOL_PAT in the MCP env config and restart.
+ *
+ * Session management:
+ *   - Single active session per MCP server instance.
+ *   - nexus_connect() establishes it, nexus_disconnect() tears it down.
+ *   - Tools check this.session before operating.
+ */
+
+import { createOfflineDocument } from "@audiotool/nexus";
+
+export interface SessionInfo {
+  projectUrl: string;
+  mode: "online" | "offline";
+  connectedAt: string;
+  entityCounts: Record<string, number>;
+}
+
+export interface NexusEntity {
+  type: string;
+  id: string;
+  fields: Record<string, unknown>;
+}
+
+// The synced document type from the SDK — typed loosely because the SDK
+// is v0.0.x and the type surface may change
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AudiotoolDocument = any;
+
+export class NexusBridge {
+  private doc: AudiotoolDocument | null = null;
+  private sessionInfo: SessionInfo | null = null;
+  private pat: string | null = process.env["AUDIOTOOL_PAT"] ?? null;
+
+  // ── Connection ──────────────────────────────────────────────────────────────
+
+  async connect(projectUrl: string): Promise<SessionInfo> {
+    // Tear down any existing session
+    await this.disconnect();
+
+    if (this.pat) {
+      // PAT path — attempt online connection
+      // NOTE: The SDK's Node.js PAT auth may need createAudiotoolClient with
+      // a token-based authorization object. This is the intended path once
+      // Audiotool stabilises Node auth. For now we attempt and fall back.
+      try {
+        // Dynamic import avoids top-level failure if online auth isn't ready
+        const { createAudiotoolClient } = await import("@audiotool/nexus");
+        // The SDK does not yet document a PAT-based auth object for createAudiotoolClient.
+        // We pass a minimal shape; if the SDK rejects it, we fall through to offline.
+        // This block will be updated once audiotool clarifies Node.js PAT auth.
+        const client = await createAudiotoolClient({
+          // @ts-expect-error — PAT auth shape TBD by SDK
+          authorization: { token: this.pat, loggedIn: true },
+        });
+        this.doc = await client.createSyncedDocument({
+          mode: "online",
+          project: projectUrl,
+        });
+        await this.doc.start();
+
+        this.sessionInfo = {
+          projectUrl,
+          mode: "online",
+          connectedAt: new Date().toISOString(),
+          entityCounts: this._countEntities(),
+        };
+        return this.sessionInfo;
+      } catch (err) {
+        process.stderr.write(
+          `[nexus-bridge] Online auth failed (${err}), falling back to offline mode\n`
+        );
+      }
+    }
+
+    // Offline mode — works without auth, no sync to Audiotool backend
+    this.doc = await createOfflineDocument();
+    this.sessionInfo = {
+      projectUrl: projectUrl || "(offline)",
+      mode: "offline",
+      connectedAt: new Date().toISOString(),
+      entityCounts: {},
+    };
+    return this.sessionInfo;
+  }
+
+  async disconnect(): Promise<void> {
+    if (this.doc) {
+      try {
+        if (typeof this.doc.stop === "function") {
+          await this.doc.stop();
+        }
+      } catch {
+        // ignore teardown errors
+      }
+      this.doc = null;
+      this.sessionInfo = null;
+    }
+  }
+
+  // ── Session accessors ───────────────────────────────────────────────────────
+
+  getSession(): SessionInfo | null {
+    return this.sessionInfo;
+  }
+
+  requireSession(): AudiotoolDocument {
+    if (!this.doc) {
+      throw new Error(
+        "No active Nexus session. Call nexus_connect first with a project URL."
+      );
+    }
+    return this.doc;
+  }
+
+  isConnected(): boolean {
+    return this.doc !== null;
+  }
+
+  getMode(): "online" | "offline" | "disconnected" {
+    if (!this.sessionInfo) return "disconnected";
+    return this.sessionInfo.mode;
+  }
+
+  hasToken(): boolean {
+    return !!this.pat;
+  }
+
+  // ── Modify wrapper ──────────────────────────────────────────────────────────
+
+  async modify(
+    fn: (t: AudiotoolDocument) => void
+  ): Promise<{ success: boolean; error?: string }> {
+    const doc = this.requireSession();
+    try {
+      await doc.modify(fn);
+      return { success: true };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return { success: false, error: message };
+    }
+  }
+
+  // ── Query helpers ───────────────────────────────────────────────────────────
+
+  queryByType(entityType: string): NexusEntity[] {
+    const doc = this.requireSession();
+    try {
+      // SDK v0.0.12: queryEntities() is a function call, ofTypes() takes an array
+      const results = doc.queryEntities?.().ofTypes([entityType])?.get() ?? [];
+      // Normalise to a serialisable shape
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return results.map((e: any) => ({
+        type: entityType,
+        id: e.id ?? e.location ?? "unknown",
+        fields: this._serializeFields(e.fields ?? {}),
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  // ── Internal helpers ────────────────────────────────────────────────────────
+
+  private _countEntities(): Record<string, number> {
+    if (!this.doc) return {};
+    const types = [
+      "tonematrix",
+      "stompboxDelay",
+      "noteTrack",
+      "noteRegion",
+      "desktopAudioCable",
+      "heisenberg",
+      "pulverisateur",
+      "bassline",
+    ];
+    const counts: Record<string, number> = {};
+    for (const t of types) {
+      try {
+        const r = this.doc.queryEntities?.ofTypes(t)?.get() ?? [];
+        if (r.length > 0) counts[t] = r.length;
+      } catch {
+        // entity type not present
+      }
+    }
+    return counts;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private _serializeFields(fields: Record<string, any>): Record<string, unknown> {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(fields)) {
+      try {
+        // Field objects have a .value accessor in the Nexus SDK
+        out[k] = v?.value ?? v;
+      } catch {
+        out[k] = "[unserializable]";
+      }
+    }
+    return out;
+  }
+}
