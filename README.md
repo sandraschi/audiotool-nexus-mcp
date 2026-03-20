@@ -1,68 +1,92 @@
 # audiotool-nexus-mcp
 
-MCP server + React webapp bridging the Claude Desktop fleet to the [Audiotool NEXUS SDK](https://developer.audiotool.com).
+MCP server (Node, stdio) plus a **local React webapp** that use the **[Audiotool NEXUS SDK](https://developer.audiotool.com)** (`@audiotool/nexus`). It exposes project/device/timeline/cable operations to Claude (and similar) and gives you a browser UI to connect and inspect state.
 
-Control a live Audiotool cloud DAW session through Claude, or inspect project state via the professional SOTA dashboard.
+**This is not “Cyber-Orchestration” or “Hyper-Vibecoding.”** Those phrases were marketing fluff. What you get is: **SDK calls + MCP tools + a dashboard**—useful if you accept beta SDK churn and honest limits below.
 
 ---
 
-## 🎹 Concept: Hyper-Vibecoding
+## What is actually here
 
-Audiotool Nexus is more than a bridge; it's the substrate for **Hyper-Vibecoding**. This move beyond simple AI music generation into **Cyber-Orchestration** allows musicians to define high-level creative "vibes" that AI agents translate into technical musical parameters in real-time.
+| Piece | Reality |
+|-------|---------|
+| **MCP tools** | Wrap the Nexus bridge: connect, query entities, create devices/tracks/regions, cables, etc. See table below. |
+| **SDK** | **Open beta** (`@audiotool/nexus` — pin version). Audiotool can break the API anytime; check their Discord before upgrading. |
+| **Webapp** | OAuth in the browser (Client ID from [developer.audiotool.com/applications](https://developer.audiotool.com/applications)). When connected, **entity lists and project views** reflect synced document data from the SDK. |
+| **“Pro” mixer / mastering / sampler pages** | **Mostly visual chrome.** Channel strips and spectrum-style widgets use **placeholder / random animation** for meters—not a calibrated audio engine. They help you **see layout and mood**, not broadcast-grade metering. Do not trust them as measurement tools. |
 
-- **Vibe as Code**: Natural language definitions of atmosphere and energy.
-- **Agentic Session Musicians**: AI agents with absolute recall of music theory and project telemetry.
-- **The Infinite Grid**: Distributed musical engine linking local logic to the Audiotool cloud.
+---
+
+## Connection (NEXUS)
+
+**stdio** → `NexusBridge` → **`createAudiotoolClient({ pat })`** → **`createSyncedDocument({ mode: "online", project: <studio URL> })`** → **`start()`** — same synced project model as [Getting Started](https://developer.audiotool.com/js-package-documentation/documents/Getting_Started.html). MCP tools read/write **entities** on that document for the given `project=` URL.
+
+If PAT is missing or online auth fails, the bridge uses **`createOfflineDocument()`** (local/dev). That path is not your online beta session; stderr may show `[nexus-bridge] Online auth failed`.
 
 ---
 
 ## Status
 
-**SDK: `@audiotool/nexus` v0.0.12 — open beta.** Audiotool explicitly warns the API may break at any time. Pin the SDK version (`npm install @audiotool/nexus@0.0.12`) and watch their [Discord](https://discord.gg/5Cde4Zvret) for breaking changes before upgrading.
+**SDK: `@audiotool/nexus` v0.0.12 — open beta.** Pin the version (`npm install @audiotool/nexus@0.0.12`) and watch [Discord](https://discord.gg/5Cde4Zvret) for breaking changes.
 
 ---
 
-## MCP Tools
+## MCP tools
 
 | Tool | Description |
-|---|---|
-| `nexus_status` | Current session state, mode, token presence |
+|------|-------------|
+| `nexus_status` | Session state, mode, token presence |
 | `nexus_connect` | Connect to an Audiotool project URL |
-| `nexus_disconnect` | Disconnect current session |
+| `nexus_disconnect` | Disconnect |
 | `nexus_get_project_info` | Project summary + entity counts |
 | `nexus_query_entities` | Query entities by type |
 | `nexus_create_device` | Create instrument or effect |
-| `nexus_list_devices` | List all instruments and effects |
+| `nexus_list_devices` | List instruments and effects |
 | `nexus_ticks_reference` | Musical time tick constants |
-| `nexus_create_note_track` | Add a note track linked to a device |
-| `nexus_add_note_region` | Add a MIDI region to a track |
-| `nexus_create_cable` | Route audio between device sockets |
-| `nexus_list_cables` | List all audio cables |
+| `nexus_create_note_track` | Add a note track |
+| `nexus_add_note_region` | Add a MIDI region |
+| `nexus_create_cable` | Route audio between sockets |
+| `nexus_list_cables` | List cables |
 
 ---
 
-## 🎛️ Specialized DAW Views
+## Webapp (optional)
 
-The webapp on port `10900` provides pro-grade production interfaces for agentic monitoring:
-
-- **Mixer Board**: Dynamic channel strips with high-res peak meters and logic-bound volume/solo/mute controls.
-- **Specialized Sampler**: Waveform visualization, transport controls, and ASDR envelope parameters.
-- **Mastering Suite**: Real-time FFT spectral analysis, signal metrics (RMS/Peak), and a master processing rack.
-- **Timeline Overview**: MIDI region management and track orchestration.
+Runs on **port 10900** (`start.ps1` / `start.bat`). Pages like **Mixer**, **Sampler**, **Mastering** are **dashboard skins** around the same synced project—**not** a substitute for Audiotool’s own UI for serious mixing. Use them for **connection testing, entity browsing, and agentic demos**, not for certified loudness or spectrum analysis.
 
 ---
 
 ## Auth
 
-Two separate auth paths:
+### MCP (Claude Desktop / headless Node): you need a PAT
 
-**Webapp (browser)** — OAuth flow via `getLoginStatus()` / `login()` from the SDK.
-Register an app at [developer.audiotool.com/applications](https://developer.audiotool.com/applications).
-Enter the Client ID in the Connect page.
+The MCP server runs **outside the browser**, so it **cannot** use the webapp’s OAuth flow. **`AUDIOTOOL_PAT` is required** for a real **online** Nexus session. Without a PAT, the bridge may stay in **offline / limited** mode—fine for local experiments, not for syncing with beta.audiotool.com.
 
-**MCP server (Node.js stdio)** — Personal Access Token (PAT).
-Generate at [developer.audiotool.com/personal-access-tokens](https://developer.audiotool.com/personal-access-tokens).
-Set in Claude Desktop config:
+**How to get a Personal Access Token**
+
+1. Sign in with your Audiotool account at the **[Audiotool Developer Dashboard](https://developer.audiotool.com)** (same account you use for the DAW).
+2. Open **[Personal Access Tokens](https://developer.audiotool.com/personal-access-tokens)**.
+3. Create a new token, give it a label you’ll recognize (e.g. `claude-desktop-mcp`), and **copy the token immediately**—many dashboards only show it once.
+4. Put it in **repo-root `.env`** as `AUDIOTOOL_PAT=...`, or pass it in the MCP `env` block (see below). Never commit the token.
+
+**How to get a project URL (for `nexus_connect` and tests)**
+
+Nexus attaches to an **existing** Audiotool project by URL.
+
+1. Open the studio (e.g. **[beta.audiotool.com](https://beta.audiotool.com)** or the project link from your Audiotool account—use whatever URL your account uses for creating/editing projects).
+2. **Create a new project** (or open one you already have). Wait until the studio has loaded.
+3. Copy the **full URL from the browser address bar**. It should look like  
+   `https://beta.audiotool.com/studio?project=<id>`  
+   (the exact host may match what Audiotool shows you; the important part is the `project=` query parameter).
+4. Use that string as the `project_url` argument to `nexus_connect`, and optionally set `AUDIOTOOL_TEST_PROJECT_URL` in `.env` for `npm run test`.
+
+Keeping the **same project open in a browser tab** while using the MCP matches the NEXUS “synced document” model from the [Getting Started](https://developer.audiotool.com/js-package-documentation/documents/Getting_Started.html) docs.
+
+---
+
+**Webapp** — OAuth via SDK (`getLoginStatus()` / `login()`). Register an app and paste Client ID on Connect. (Separate from the PAT; the PAT is for **Node/MCP**.)
+
+**MCP env example** — Personal Access Token: [developer.audiotool.com/personal-access-tokens](https://developer.audiotool.com/personal-access-tokens). Example:
 
 ```json
 {
@@ -78,17 +102,17 @@ Set in Claude Desktop config:
 }
 ```
 
-Per current SDK docs, the PAT is passed as `pat` to `createAudiotoolClient`.
+Per SDK docs, PAT is passed as `pat` to `createAudiotoolClient`. **Without PAT:** MCP runs in offline / limited mode (see code and stderr messages).
 
-**Without a PAT:** The MCP server operates in offline mode — documents are local, no sync to Audiotool. Useful for testing tool calls before setting up auth.
+Local dev: copy `.env.example` → `.env`, set `AUDIOTOOL_PAT` in the **repo root** (same folder as `package.json`). The MCP entrypoint loads that file **by path**, not only from the current working directory—so launchers don’t have to `cd` into the repo for the PAT to apply.
 
-For local CLI runs (`npm run start` or inspector), copy `.env.example` to `.env` and set `AUDIOTOOL_PAT` there (`.env` is gitignored).
+**What Audiotool / Nexus are:** see [docs/AUDIOTOOL_AND_NEXUS.md](docs/AUDIOTOOL_AND_NEXUS.md) (modular DAW + API; not a marketplace spec).
 
 ---
 
 ## Setup
 
-### MCP Server
+### MCP
 
 ```powershell
 Set-Location D:\Dev\repos\audiotool-nexus-mcp
@@ -96,12 +120,22 @@ npm install
 npm run build
 ```
 
-Verify: `node dist/index.js` — should print startup message to stderr and wait for stdin JSON-RPC.
+Verify: `node dist/index.js` — waits on stdio JSON-RPC.
+
+### Integration test (PAT must yield **online**)
+
+Requires `AUDIOTOOL_PAT` and `AUDIOTOOL_TEST_PROJECT_URL` in `.env` (see `.env.example`). Then:
+
+```powershell
+npm run test
+```
+
+If both are set, Vitest asserts **`nexus_connect` → `session.mode === "online"`** — not silent offline fallback. If env vars are missing, those tests **skip** (e.g. CI). See [`tests/integration/README.md`](tests/integration/README.md).
 
 ### Webapp
 
 ```powershell
-.\start.bat   # or .\start.ps1
+.\start.bat
 ```
 
 Opens at http://localhost:10900
@@ -111,23 +145,23 @@ Opens at http://localhost:10900
 ## Ports
 
 | Port | Service |
-|---|---|
-| 10900 | Webapp (Vite dev server) |
+|------|---------|
+| 10900 | Webapp (Vite dev) |
 
-No backend API server — the webapp talks to Audiotool directly via the SDK.
+No separate FastAPI layer—the webapp talks to Audiotool **via the SDK in the browser**.
 
 ---
 
 ## Known limitations
 
-- **Node.js PAT auth**: The SDK's PAT integration for Node.js is not yet formally documented. The bridge attempts it and falls back to offline mode if it fails. Once Audiotool stabilises Node.js auth, this will work cleanly.
-- **Socket location references**: The `nexus_create_cable` tool requires socket location strings from inside entity fields. These look like `entities/abc123/fields/audioOutput`. Currently the only way to get them is via `nexus_query_entities` and inspecting the raw fields.
-- **Read-only entities**: `noteRegion` MIDI content (individual notes inside a region) is not yet exposed through this MCP layer — only the region container is created.
+- **Node PAT auth** — SDK PAT path for Node may be less documented than browser OAuth; the bridge tries PAT and can fall back to offline mode if it fails.
+- **Cable sockets** — `nexus_create_cable` needs socket location strings from entity fields (e.g. `entities/.../fields/audioOutput`). Discover via `nexus_query_entities` and inspect fields.
+- **MIDI detail** — Note *regions* can be created; fine-grained note editing inside a region may not be fully exposed here (see code).
+- **Webapp visuals** — Mixer/mastering-style meters and spectrum blocks are **not** scientifically accurate; they are UI demos unless wired to real analytics later.
 
 ---
 
-## Fleet registration
+## Fleet / registry
 
-- Ports: 10900 (webapp frontend)  
-- FLEET_INDEX.md: `audiotool-nexus-mcp`  
-- GitHub: `https://github.com/sandraschi/audiotool-nexus-mcp`
+- Ports: **10900** (webapp)  
+- GitHub: `https://github.com/sandraschi/audiotool-nexus-mcp` (if public)

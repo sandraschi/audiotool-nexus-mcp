@@ -11,7 +11,9 @@
  * offline/test mode and clearly report the limitation.
  */
 
-import "dotenv/config";
+import { config as loadEnv } from "dotenv";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -24,6 +26,9 @@ import { registerProjectTools } from "./tools/project.js";
 import { registerDeviceTools } from "./tools/devices.js";
 import { registerTimelineTools } from "./tools/timeline.js";
 import { registerCableTools } from "./tools/cables.js";
+
+const _repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
+loadEnv({ path: resolve(_repoRoot, ".env") });
 
 const SERVER_NAME = "audiotool-nexus-mcp";
 const SERVER_VERSION = "0.1.0";

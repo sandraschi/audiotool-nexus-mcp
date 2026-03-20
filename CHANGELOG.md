@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Vitest integration tests** (`npm run test`): when `AUDIOTOOL_PAT` and `AUDIOTOOL_TEST_PROJECT_URL` are set in `.env`, asserts **online** Nexus session (not offline fallback). Skips when env is absent.
+- **docs/AUDIOTOOL_AND_NEXUS.md:** What beta.audiotool.com + NEXUS are; PAT note; marketplace caveat.
+
+### Changed
+- **`.env` loading:** MCP entrypoint and Vitest setup load `.env` from the **repository root by path** (not only `process.cwd()`), so PAT is read when the process is started from another working directory.
+
+### Documentation
+- **README:** Removed sci-fi marketing (“Hyper-Vibecoding”, “Cyber-Orchestration”, etc.). Clarified that mixer/mastering/sampler views are **dashboard UI** with **placeholder/random** metering visuals—not measurement-grade tools. SDK remains open beta; MCP/webapp split unchanged.
+- **README / docs / `.env.example`:** Step-by-step **PAT required for MCP**, how to create a token, and how to create a project and copy its URL.
+- **README + `docs/AUDIOTOOL_AND_NEXUS.md`:** **Connection (NEXUS)** — stack + offline vs online; dropped redundant “not arbitrary DAW” disclaimers.
+
 ## [0.1.0] - 2026-03-16
 
 ### Added
