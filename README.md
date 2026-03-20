@@ -2,7 +2,17 @@
 
 MCP server + React webapp bridging the Claude Desktop fleet to the [Audiotool NEXUS SDK](https://developer.audiotool.com).
 
-Control a live Audiotool cloud DAW session through Claude, or inspect project state via the dashboard.
+Control a live Audiotool cloud DAW session through Claude, or inspect project state via the professional SOTA dashboard.
+
+---
+
+## 🎹 Concept: Hyper-Vibecoding
+
+Audiotool Nexus is more than a bridge; it's the substrate for **Hyper-Vibecoding**. This move beyond simple AI music generation into **Cyber-Orchestration** allows musicians to define high-level creative "vibes" that AI agents translate into technical musical parameters in real-time.
+
+- **Vibe as Code**: Natural language definitions of atmosphere and energy.
+- **Agentic Session Musicians**: AI agents with absolute recall of music theory and project telemetry.
+- **The Infinite Grid**: Distributed musical engine linking local logic to the Audiotool cloud.
 
 ---
 
@@ -28,6 +38,17 @@ Control a live Audiotool cloud DAW session through Claude, or inspect project st
 | `nexus_add_note_region` | Add a MIDI region to a track |
 | `nexus_create_cable` | Route audio between device sockets |
 | `nexus_list_cables` | List all audio cables |
+
+---
+
+## 🎛️ Specialized DAW Views
+
+The webapp on port `10900` provides pro-grade production interfaces for agentic monitoring:
+
+- **Mixer Board**: Dynamic channel strips with high-res peak meters and logic-bound volume/solo/mute controls.
+- **Specialized Sampler**: Waveform visualization, transport controls, and ASDR envelope parameters.
+- **Mastering Suite**: Real-time FFT spectral analysis, signal metrics (RMS/Peak), and a master processing rack.
+- **Timeline Overview**: MIDI region management and track orchestration.
 
 ---
 
@@ -57,7 +78,11 @@ Set in Claude Desktop config:
 }
 ```
 
+Per current SDK docs, the PAT is passed as `pat` to `createAudiotoolClient`.
+
 **Without a PAT:** The MCP server operates in offline mode — documents are local, no sync to Audiotool. Useful for testing tool calls before setting up auth.
+
+For local CLI runs (`npm run start` or inspector), copy `.env.example` to `.env` and set `AUDIOTOOL_PAT` there (`.env` is gitignored).
 
 ---
 

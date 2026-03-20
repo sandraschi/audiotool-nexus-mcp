@@ -18,8 +18,7 @@
  *   - Tools check this.session before operating.
  */
 
-import { createOfflineDocument } from "@audiotool/nexus";
-
+// SDK types for @audiotool/nexus can be incomplete at v0.0.x; we use dynamic import at runtime.
 export interface SessionInfo {
   projectUrl: string;
   mode: "online" | "offline";
@@ -50,20 +49,13 @@ export class NexusBridge {
     await this.disconnect();
 
     if (this.pat) {
-      // PAT path — attempt online connection
-      // NOTE: The SDK's Node.js PAT auth may need createAudiotoolClient with
-      // a token-based authorization object. This is the intended path once
-      // Audiotool stabilises Node auth. For now we attempt and fall back.
       try {
-        // Dynamic import avoids top-level failure if online auth isn't ready
-        const { createAudiotoolClient } = await import("@audiotool/nexus");
-        // The SDK does not yet document a PAT-based auth object for createAudiotoolClient.
-        // We pass a minimal shape; if the SDK rejects it, we fall through to offline.
-        // This block will be updated once audiotool clarifies Node.js PAT auth.
-        const client = await createAudiotoolClient({
-          // @ts-expect-error — PAT auth shape TBD by SDK
-          authorization: { token: this.pat, loggedIn: true },
-        });
+        const nexus = (await import("@audiotool/nexus")) as {
+          createAudiotoolClient: (opts: { pat: string }) => Promise<{
+            createSyncedDocument: (opts: { mode: string; project: string }) => Promise<{ start: () => Promise<void> }>;
+          }>;
+        };
+        const client = await nexus.createAudiotoolClient({ pat: this.pat });
         this.doc = await client.createSyncedDocument({
           mode: "online",
           project: projectUrl,
@@ -84,8 +76,10 @@ export class NexusBridge {
       }
     }
 
-    // Offline mode — works without auth, no sync to Audiotool backend
-    this.doc = await createOfflineDocument();
+    const nexus = (await import("@audiotool/nexus")) as {
+      createOfflineDocument: (opts?: { validated?: boolean }) => Promise<unknown>;
+    };
+    this.doc = await nexus.createOfflineDocument();
     this.sessionInfo = {
       projectUrl: projectUrl || "(offline)",
       mode: "offline",
@@ -150,6 +144,27 @@ export class NexusBridge {
       const message = err instanceof Error ? err.message : String(err);
       return { success: false, error: message };
     }
+  }
+
+  async setParameter(
+    entityId: string,
+    paramName: string,
+    value: unknown
+  ): Promise<{ success: boolean; error?: string }> {
+    return this.modify((t) => {
+      // SDK v0.0.12: getEntity() takes a location or id
+      const entity = t.getEntity(entityId);
+      if (!entity) {
+        throw new Error(`Entity not found: ${entityId}`);
+      }
+      // Fields in the Nexus SDK are modified by setting the field's value
+      if (entity.fields[paramName]) {
+        entity.fields[paramName].value = value;
+      } else {
+        // Fallback for dynamic fields or if field doesn't exist yet
+        entity.fields[paramName] = value;
+      }
+    });
   }
 
   // ── Query helpers ───────────────────────────────────────────────────────────

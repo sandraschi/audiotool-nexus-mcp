@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { PlusCircle, Loader2, CheckCircle2, AlertTriangle, Info } from "lucide-react";
-import { Ticks } from "@audiotool/nexus";
+import { Ticks } from "@audiotool/nexus/utils";
 import { useNexusStore } from "../store";
 
 const SEMIBREVE = Ticks.SemiBreve;

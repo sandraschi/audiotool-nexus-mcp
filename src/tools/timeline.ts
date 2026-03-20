@@ -1,14 +1,18 @@
 /**
  * Timeline tools — create note tracks and note regions.
  *
- * Musical time uses the Ticks system from the SDK:
- *   Ticks.SemiBreve = 1 whole note (4 beats in 4/4)
- *   The SDK exports a Ticks object with named constants.
+ * Musical time uses ticks (SDK docs: Beat=3840, SemiBreve=15360, SemiQuaver=960).
+ * 1 bar (4/4) = SemiBreve.
  */
 
-import { Ticks } from "@audiotool/nexus";
 import type { NexusBridge } from "../nexus-bridge.js";
 import type { McpTool } from "../types.js";
+
+const Ticks = {
+  Beat: 3840,
+  SemiBreve: 15360,
+  SemiQuaver: 960,
+} as const;
 
 export function registerTimelineTools(bridge: NexusBridge): McpTool[] {
   return [
@@ -23,15 +27,17 @@ export function registerTimelineTools(bridge: NexusBridge): McpTool[] {
       handler: async () => ({
         success: true,
         ticks: {
+          Beat: Ticks.Beat,
           SemiBreve: Ticks.SemiBreve,
-          HalfNote: Ticks.HalfNote ?? Ticks.SemiBreve / 2,
-          QuarterNote: Ticks.QuarterNote ?? Ticks.SemiBreve / 4,
-          EighthNote: Ticks.EighthNote ?? Ticks.SemiBreve / 8,
-          SixteenthNote: Ticks.SixteenthNote ?? Ticks.SemiBreve / 16,
+          SemiQuaver: Ticks.SemiQuaver,
+          HalfNote: Ticks.SemiBreve / 2,
+          QuarterNote: Ticks.Beat,
+          EighthNote: Ticks.SemiBreve / 8,
+          SixteenthNote: Ticks.SemiQuaver,
         },
         note:
-          "HalfNote/QuarterNote/EighthNote/SixteenthNote may be derived; " +
-          "SemiBreve is the guaranteed SDK export. 1 bar (4/4) = 1 SemiBreve.",
+          "1 bar (4/4) = SemiBreve. Beat = 1 quarter note. SemiQuaver = 1/16. " +
+          "Use position_ticks/duration_ticks in nexus_add_note_region.",
       }),
     },
 

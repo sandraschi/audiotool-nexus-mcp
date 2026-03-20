@@ -1,238 +1,87 @@
-/**
- * ConnectPage — OAuth login + project URL entry.
- *
- * Auth flow reality:
- *   The @audiotool/nexus SDK uses browser-based OAuth (getLoginStatus / login popup).
- *   This page drives that flow directly.  The MCP server (Node.js stdio) uses a
- *   PAT set via env var AUDIOTOOL_PAT — that's separate.
- *   This webapp handles its OWN connection to Audiotool for the live entity view.
- */
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { LogIn, ExternalLink, AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
-import { getLoginStatus, createAudiotoolClient } from "@audiotool/nexus";
 import { useNexusStore } from "../store";
-
-// You fill this in after registering at developer.audiotool.com/applications
-const REDIRECT_URL = window.location.origin + "/";
+import { Plug, Music2, AlertTriangle, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 export function ConnectPage() {
-  const { clientId, setClientId, projectUrl, setProjectUrl, setMode, setDoc, setConnectedAt, addLog, setPage } =
-    useNexusStore();
-
-  const [status, setStatus] = useState<"idle" | "logging-in" | "connecting" | "done" | "error">(
-    "idle"
-  );
-  const [errorMsg, setErrorMsg] = useState("");
-
-  async function handleConnect() {
-    if (!clientId.trim()) {
-      setErrorMsg("Enter your OAuth Client ID from developer.audiotool.com/applications");
-      return;
-    }
-    if (!projectUrl.trim()) {
-      setErrorMsg("Enter the Audiotool project URL");
-      return;
-    }
-    setErrorMsg("");
-    setStatus("logging-in");
-    addLog("info", `Starting OAuth flow with clientId=${clientId}`);
-
-    try {
-      const loginStatus = await getLoginStatus({
-        clientId: clientId.trim(),
-        redirectUrl: REDIRECT_URL,
-        scope: "project:write",
-      });
-
-      if (!loginStatus.loggedIn) {
-        addLog("info", "Not logged in — opening Audiotool login popup...");
-        // This triggers the OAuth popup/redirect
-        loginStatus.login();
-        // Wait for login (popup completes and redirects back)
-        await new Promise<void>((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error("Login timed out after 120s")), 120_000);
-          const check = setInterval(async () => {
-            try {
-              const recheckStatus = await getLoginStatus({
-                clientId: clientId.trim(),
-                redirectUrl: REDIRECT_URL,
-                scope: "project:write",
-              });
-              if (recheckStatus.loggedIn) {
-                clearInterval(check);
-                clearTimeout(timeout);
-                resolve();
-              }
-            } catch {
-              // keep polling
-            }
-          }, 1000);
-        });
-      }
-
-      addLog("info", "Logged in — connecting to project...");
-      setStatus("connecting");
-
-      // Re-fetch status after login
-      const finalStatus = await getLoginStatus({
-        clientId: clientId.trim(),
-        redirectUrl: REDIRECT_URL,
-        scope: "project:write",
-      });
-
-      const client = await createAudiotoolClient({ authorization: finalStatus });
-      const doc = await client.createSyncedDocument({
-        mode: "online",
-        project: projectUrl.trim(),
-      });
-      await doc.start();
-
-      setDoc(doc);
-      setMode("online");
-      setConnectedAt(new Date().toISOString());
-      addLog("info", `Connected online to ${projectUrl}`);
-      setStatus("done");
-      setPage("project");
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setErrorMsg(msg);
-      setStatus("error");
-      addLog("error", `Connect failed: ${msg}`);
-    }
-  }
-
-  function handleOffline() {
-    setMode("offline");
-    setConnectedAt(new Date().toISOString());
-    addLog("info", "Started offline session (no Audiotool sync)");
-    setPage("project");
-  }
+  const { connect, mode, msg } = useNexusStore();
+  const [url, setUrl] = useState("https://www.audiotool.com/project/nexus-test");
 
   return (
-    <div className="max-w-lg mx-auto pt-12">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-100 mb-1">Connect to Audiotool</h1>
-        <p className="text-zinc-400 text-sm">
-          Log in with your Audiotool OAuth app to sync with a live project, or use offline mode
-          for structural testing without auth.
-        </p>
-      </div>
+    <div className="max-w-2xl mx-auto py-12 px-4 h-full flex flex-col justify-center">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-12"
+      >
+        <header className="text-center space-y-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-400 to-amber-600 shadow-[0_0_50px_rgba(245,158,11,0.3)] mb-4">
+            <Music2 size={40} className="text-zinc-950" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-5xl font-bold tracking-tight text-white font-sans">
+              Nexus <span className="text-amber-500 font-light">MCP</span>
+            </h1>
+            <p className="text-zinc-500 text-lg max-w-md mx-auto leading-relaxed">
+              Synthesizing the boundary between local logic and Audiotool's cloud grid.
+            </p>
+          </div>
+        </header>
+        
+        <div className="glass-panel p-10 space-y-8 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
+          
+          <div className="space-y-4">
+            <div className="flex justify-between items-end px-1">
+              <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest" id="label-url">Project Handshake URL</label>
+              <span className="text-[10px] mono text-zinc-700">v13.0 SOTA</span>
+            </div>
+            <input 
+              type="text"
+              aria-labelledby="label-url"
+              className="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-5 py-4 text-white placeholder:text-zinc-800 focus:outline-none focus:border-amber-500/50 transition-all font-mono text-sm"
+              placeholder="https://www.audiotool.com/project/..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+            />
+          </div>
 
-      {/* Card */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-5">
-        {/* Client ID */}
-        <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-            OAuth Client ID
-            <a
-              href="https://developer.audiotool.com/applications"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ml-2 text-amber-400 hover:text-amber-300 inline-flex items-center gap-1"
+          <button 
+            onClick={() => connect(url)}
+            disabled={mode !== 'disconnected'}
+            className="primary-button w-full py-5 text-base"
+          >
+            {mode === 'disconnected' ? (
+              <>
+                <Plug size={20} />
+                Establish Secure Session
+              </>
+            ) : (
+              <>
+                <Loader2 size={20} className="animate-spin" />
+                Negotiating...
+              </>
+            )}
+          </button>
+
+          {msg && mode === 'disconnected' && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex items-center gap-3 bg-red-500/5 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm"
             >
-              Get one <ExternalLink size={11} />
-            </a>
-          </label>
-          <input
-            type="text"
-            value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
-            placeholder="your-client-id"
-            className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100
-              placeholder-zinc-600 focus:outline-none focus:border-amber-500 transition-colors mono"
-          />
+              <AlertTriangle size={18} className="flex-shrink-0" />
+              {msg}
+            </motion.div>
+          )}
         </div>
 
-        {/* Project URL */}
-        <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-            Project URL
-          </label>
-          <input
-            type="text"
-            value={projectUrl}
-            onChange={(e) => setProjectUrl(e.target.value)}
-            placeholder="https://beta.audiotool.com/studio?project=..."
-            className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100
-              placeholder-zinc-600 focus:outline-none focus:border-amber-500 transition-colors mono"
-          />
-          <p className="text-xs text-zinc-600 mt-1">
-            Open a project on beta.audiotool.com, copy the URL from your browser.
+        <footer className="text-center">
+          <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-zinc-700">
+            Powered by Google Deepmind · Advanced Agentic Coding
           </p>
-        </div>
-
-        {/* Error */}
-        {errorMsg && (
-          <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg"
-          >
-            <AlertTriangle size={15} className="text-red-400 mt-0.5 flex-shrink-0" />
-            <span className="text-red-300 text-sm">{errorMsg}</span>
-          </motion.div>
-        )}
-
-        {/* Success */}
-        {status === "done" && (
-          <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/20 rounded-lg"
-          >
-            <CheckCircle2 size={15} className="text-green-400" />
-            <span className="text-green-300 text-sm">Connected! Redirecting...</span>
-          </motion.div>
-        )}
-
-        {/* Buttons */}
-        <div className="flex gap-3">
-          <button
-            onClick={handleConnect}
-            disabled={status === "logging-in" || status === "connecting" || status === "done"}
-            className="flex-1 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400
-              disabled:bg-zinc-700 disabled:text-zinc-500 text-zinc-950 font-semibold
-              px-4 py-2.5 rounded-lg text-sm transition-colors"
-          >
-            {status === "logging-in" && <Loader2 size={15} className="animate-spin" />}
-            {status === "connecting" && <Loader2 size={15} className="animate-spin" />}
-            {status === "logging-in"
-              ? "Waiting for login..."
-              : status === "connecting"
-              ? "Connecting..."
-              : status === "done"
-              ? "Connected"
-              : (
-                <>
-                  <LogIn size={15} />
-                  Login &amp; Connect
-                </>
-              )}
-          </button>
-
-          <button
-            onClick={handleOffline}
-            className="px-4 py-2.5 rounded-lg text-sm border border-zinc-700 text-zinc-400
-              hover:border-zinc-600 hover:text-zinc-200 transition-colors"
-          >
-            Offline Mode
-          </button>
-        </div>
-      </div>
-
-      {/* Info box */}
-      <div className="mt-4 p-4 bg-zinc-900/50 border border-zinc-800/50 rounded-lg space-y-2">
-        <p className="text-xs font-medium text-zinc-400">How auth works</p>
-        <p className="text-xs text-zinc-600 leading-relaxed">
-          This webapp uses the Audiotool OAuth flow (browser popup) to connect to your live project
-          and display its state. The MCP server (Claude Desktop) uses a separate{" "}
-          <code className="text-zinc-400 mono">AUDIOTOOL_PAT</code> env var — set that in{" "}
-          <code className="text-zinc-400 mono">claude_desktop_config.json</code> to enable
-          Claude to write to your projects.
-        </p>
-      </div>
+        </footer>
+      </motion.div>
     </div>
   );
 }

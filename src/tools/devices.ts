@@ -132,5 +132,50 @@ export function registerDeviceTools(bridge: NexusBridge): McpTool[] {
         };
       },
     },
+
+    // ── nexus_set_parameter ───────────────────────────────────────────────────
+    {
+      name: "nexus_set_parameter",
+      description:
+        "Modify a parameter on an existing audio device (instrument or effect). " +
+        "Use this for real-time sound design and mixing. " +
+        "Examples: feedbackFactor for delays, patternIndex for tonematrix, etc.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          device_id: {
+            type: "string",
+            description: "Target device ID (location).",
+          },
+          param_name: {
+            type: "string",
+            description: "Name of the parameter to change (e.g. 'mix', 'feedbackFactor').",
+          },
+          value: {
+            type: ["number", "string", "boolean"],
+            description: "The new value for the parameter.",
+          },
+        },
+        required: ["device_id", "param_name", "value"],
+      },
+      handler: async (args) => {
+        const deviceId = String(args["device_id"] ?? "");
+        const paramName = String(args["param_name"] ?? "");
+        const value = args["value"];
+
+        const result = await bridge.setParameter(deviceId, paramName, value);
+
+        return {
+          ...result,
+          device_id: deviceId,
+          param_name: paramName,
+          value,
+          note:
+            bridge.getMode() === "offline"
+              ? "Parameter updated in offline mode — not synced."
+              : "Parameter updated and synced to Audiotool.",
+        };
+      },
+    },
   ];
 }
