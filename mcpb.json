@@ -1,0 +1,16 @@
+{
+  "build": {
+    "command": "npm run build",
+    "output_dir": "dist",
+    "entry_point": "index.js"
+  },
+  "runtime": {
+    "engine": "node",
+    "min_version": "18.0.0"
+  },
+  "industrial": {
+    "sota": "14.1",
+    "quality_check": "npm run lint",
+    "format_check": "npx prettier --check ."
+  }
+}

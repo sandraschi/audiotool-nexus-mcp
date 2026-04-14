@@ -24,6 +24,7 @@ export interface SessionInfo {
   mode: "online" | "offline";
   connectedAt: string;
   entityCounts: Record<string, number>;
+  sdkVersion: string;
 }
 
 export interface NexusEntity {
@@ -40,7 +41,7 @@ type AudiotoolDocument = any;
 export class NexusBridge {
   private doc: AudiotoolDocument | null = null;
   private sessionInfo: SessionInfo | null = null;
-  private pat: string | null = process.env["AUDIOTOOL_PAT"] ?? null;
+  private pat: string | null = process.env.AUDIOTOOL_PAT ?? null;
 
   // ── Connection ──────────────────────────────────────────────────────────────
 
@@ -52,7 +53,9 @@ export class NexusBridge {
       try {
         const nexus = (await import("@audiotool/nexus")) as {
           createAudiotoolClient: (opts: { pat: string }) => Promise<{
-            createSyncedDocument: (opts: { mode: string; project: string }) => Promise<{ start: () => Promise<void> }>;
+            createSyncedDocument: (opts: { mode: string; project: string }) => Promise<{
+              start: () => Promise<void>;
+            }>;
           }>;
         };
         const client = await nexus.createAudiotoolClient({ pat: this.pat });
@@ -67,11 +70,12 @@ export class NexusBridge {
           mode: "online",
           connectedAt: new Date().toISOString(),
           entityCounts: this._countEntities(),
+          sdkVersion: "0.0.12",
         };
         return this.sessionInfo;
       } catch (err) {
         process.stderr.write(
-          `[nexus-bridge] Online auth failed (${err}), falling back to offline mode\n`
+          `[nexus-bridge] Online auth failed (${err}), falling back to offline mode\n`,
         );
       }
     }
@@ -85,6 +89,7 @@ export class NexusBridge {
       mode: "offline",
       connectedAt: new Date().toISOString(),
       entityCounts: {},
+      sdkVersion: "0.0.12",
     };
     return this.sessionInfo;
   }
@@ -111,9 +116,7 @@ export class NexusBridge {
 
   requireSession(): AudiotoolDocument {
     if (!this.doc) {
-      throw new Error(
-        "No active Nexus session. Call nexus_connect first with a project URL."
-      );
+      throw new Error("No active Nexus session. Call nexus_connect first with a project URL.");
     }
     return this.doc;
   }
@@ -133,9 +136,7 @@ export class NexusBridge {
 
   // ── Modify wrapper ──────────────────────────────────────────────────────────
 
-  async modify(
-    fn: (t: AudiotoolDocument) => void
-  ): Promise<{ success: boolean; error?: string }> {
+  async modify(fn: (t: AudiotoolDocument) => void): Promise<{ success: boolean; error?: string }> {
     const doc = this.requireSession();
     try {
       await doc.modify(fn);
@@ -149,7 +150,7 @@ export class NexusBridge {
   async setParameter(
     entityId: string,
     paramName: string,
-    value: unknown
+    value: unknown,
   ): Promise<{ success: boolean; error?: string }> {
     return this.modify((t) => {
       // SDK v0.0.12: getEntity() takes a location or id

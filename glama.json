@@ -1,0 +1,28 @@
+{
+  "name": "audiotool-nexus-mcp",
+  "version": "0.1.0",
+  "description": "Industrialized Audiotool NEXUS MCP node (SOTA 14.1)",
+  "author": "Sandra Schi",
+  "registry": "mcp-central-docs",
+  "port_assignments": {
+    "webapp": 10900
+  },
+  "capabilities": {
+    "tools": [
+      "nexus_status",
+      "nexus_connect",
+      "nexus_disconnect",
+      "nexus_get_project_info",
+      "nexus_query_entities",
+      "nexus_create_device",
+      "nexus_list_devices",
+      "nexus_ticks_reference",
+      "nexus_create_note_track",
+      "nexus_add_note_region",
+      "nexus_create_cable",
+      "nexus_list_cables"
+    ]
+  },
+  "industrial_status": "HARDENED",
+  "sota_version": "14.1"
+}

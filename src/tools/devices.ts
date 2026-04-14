@@ -31,8 +31,7 @@ export function registerDeviceTools(bridge: NexusBridge): McpTool[] {
           device_type: {
             type: "string",
             enum: ALL_DEVICE_TYPES,
-            description:
-              "Nexus device type. Must be one of: " + ALL_DEVICE_TYPES.join(", "),
+            description: `Nexus device type. Must be one of: ${ALL_DEVICE_TYPES.join(", ")}`,
           },
           display_name: {
             type: "string",
@@ -58,11 +57,11 @@ export function registerDeviceTools(bridge: NexusBridge): McpTool[] {
         required: ["device_type"],
       },
       handler: async (args) => {
-        const deviceType = String(args["device_type"] ?? "");
-        const displayName = String(args["display_name"] ?? `${deviceType}-1`);
-        const posX = Number(args["position_x"] ?? 100);
-        const posY = Number(args["position_y"] ?? 150);
-        const extraParams = (args["params"] ?? {}) as Record<string, unknown>;
+        const deviceType = String(args.device_type ?? "");
+        const displayName = String(args.display_name ?? `${deviceType}-1`);
+        const posX = Number(args.position_x ?? 100);
+        const posY = Number(args.position_y ?? 150);
+        const extraParams = (args.params ?? {}) as Record<string, unknown>;
 
         if (!ALL_DEVICE_TYPES.includes(deviceType as (typeof ALL_DEVICE_TYPES)[number])) {
           return {
@@ -159,9 +158,9 @@ export function registerDeviceTools(bridge: NexusBridge): McpTool[] {
         required: ["device_id", "param_name", "value"],
       },
       handler: async (args) => {
-        const deviceId = String(args["device_id"] ?? "");
-        const paramName = String(args["param_name"] ?? "");
-        const value = args["value"];
+        const deviceId = String(args.device_id ?? "");
+        const paramName = String(args.param_name ?? "");
+        const value = args.value;
 
         const result = await bridge.setParameter(deviceId, paramName, value);
 

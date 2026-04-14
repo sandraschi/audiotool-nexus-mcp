@@ -1,11 +1,11 @@
+import { motion } from "framer-motion";
+import { AlertCircle, ExternalLink, Music2, RefreshCw } from "lucide-react";
 /**
  * ProjectView — live entity overview of the connected project.
  * Queries all known entity types and shows counts + a searchable entity list.
  */
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { RefreshCw, ExternalLink, Music2, AlertCircle } from "lucide-react";
-import { useNexusStore, type EntityEntry } from "../store";
+import { type EntityEntry, useNexusStore } from "../store";
 
 const ENTITY_TYPES = [
   "tonematrix",
@@ -89,7 +89,7 @@ export function ProjectView() {
     ? allEntities.filter(
         (e) =>
           e.type.toLowerCase().includes(entityFilter.toLowerCase()) ||
-          e.id.toLowerCase().includes(entityFilter.toLowerCase())
+          e.id.toLowerCase().includes(entityFilter.toLowerCase()),
       )
     : allEntities;
 
@@ -137,9 +137,9 @@ export function ProjectView() {
         <div className="flex items-center gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
           <AlertCircle size={14} className="text-amber-400" />
           <span className="text-amber-300 text-sm">
-            Offline mode — changes are local only, not synced to Audiotool.
-            Set <code className="mono text-amber-200">AUDIOTOOL_PAT</code> in Claude Desktop
-            config and reconnect for live sync.
+            Offline mode — changes are local only, not synced to Audiotool. Set{" "}
+            <code className="mono text-amber-200">AUDIOTOOL_PAT</code> in Claude Desktop config and
+            reconnect for live sync.
           </span>
         </div>
       )}
@@ -189,7 +189,10 @@ export function ProjectView() {
           </div>
           <div className="divide-y divide-zinc-800 max-h-96 overflow-y-auto">
             {filtered.map((e, i) => (
-              <div key={i} className="px-4 py-2.5 flex items-start gap-3 hover:bg-zinc-800/40 transition-colors">
+              <div
+                key={i}
+                className="px-4 py-2.5 flex items-start gap-3 hover:bg-zinc-800/40 transition-colors"
+              >
                 <span
                   className="inline-block mt-0.5 text-xs mono px-1.5 py-0.5 rounded flex-shrink-0"
                   style={{

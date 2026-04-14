@@ -1,6 +1,6 @@
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertCircle, Info, ScrollText, ShieldAlert, Terminal, Trash2 } from "lucide-react";
 import { useNexusStore } from "../store";
-import { ScrollText, Terminal, ShieldAlert, Info, AlertCircle, Trash2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 export function LogViewer() {
   const { logs, clearLogs } = useNexusStore();
@@ -14,11 +14,13 @@ export function LogViewer() {
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-zinc-100">Telemetry Feed</h1>
-            <p className="text-xs text-zinc-500 uppercase tracking-widest font-bold">Real-time system events</p>
+            <p className="text-xs text-zinc-500 uppercase tracking-widest font-bold">
+              Real-time system events
+            </p>
           </div>
         </div>
-        
-        <button 
+
+        <button
           onClick={clearLogs}
           className="px-4 py-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/10 transition-all text-xs font-bold flex items-center gap-2"
         >
@@ -34,9 +36,11 @@ export function LogViewer() {
             <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20 border border-amber-500/40" />
             <div className="w-2.5 h-2.5 rounded-full bg-green-500/20 border border-green-500/40" />
           </div>
-          <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-tighter">nexus_telemetry.log</span>
+          <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-tighter">
+            nexus_telemetry.log
+          </span>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto p-4 space-y-1 scrollbar-thin scrollbar-thumb-zinc-800">
           {logs.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-zinc-700 opacity-50">
@@ -51,13 +55,15 @@ export function LogViewer() {
                   initial={{ opacity: 0, x: -5 }}
                   animate={{ opacity: 1, x: 0 }}
                   className={`flex gap-3 text-[12px] py-1 border-b border-white/[0.02] last:border-0
-                    ${log.level === 'error' ? 'text-red-400' : log.level === 'warn' ? 'text-amber-300' : 'text-zinc-400'}`}
+                    ${log.level === "error" ? "text-red-400" : log.level === "warn" ? "text-amber-300" : "text-zinc-400"}`}
                 >
-                  <span className="text-zinc-700 flex-shrink-0 w-20">[{log.timestamp.toLocaleTimeString()}]</span>
+                  <span className="text-zinc-700 flex-shrink-0 w-20">
+                    [{log.timestamp.toLocaleTimeString()}]
+                  </span>
                   <span className="font-bold flex-shrink-0 w-12 uppercase tracking-tighter">
-                    {log.level === 'error' && <ShieldAlert size={12} className="inline mr-1" />}
-                    {log.level === 'warn' && <AlertCircle size={12} className="inline mr-1" />}
-                    {log.level === 'info' && <Info size={12} className="inline mr-1" />}
+                    {log.level === "error" && <ShieldAlert size={12} className="inline mr-1" />}
+                    {log.level === "warn" && <AlertCircle size={12} className="inline mr-1" />}
+                    {log.level === "info" && <Info size={12} className="inline mr-1" />}
                     {log.level}
                   </span>
                   <span className="flex-1">{log.message}</span>

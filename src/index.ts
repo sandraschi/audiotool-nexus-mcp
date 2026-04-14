@@ -11,21 +11,18 @@
  * offline/test mode and clearly report the limitation.
  */
 
-import { config as loadEnv } from "dotenv";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { config as loadEnv } from "dotenv";
 
 import { NexusBridge } from "./nexus-bridge.js";
-import { registerProjectTools } from "./tools/project.js";
-import { registerDeviceTools } from "./tools/devices.js";
-import { registerTimelineTools } from "./tools/timeline.js";
 import { registerCableTools } from "./tools/cables.js";
+import { registerDeviceTools } from "./tools/devices.js";
+import { registerProjectTools } from "./tools/project.js";
+import { registerTimelineTools } from "./tools/timeline.js";
 
 const _repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 loadEnv({ path: resolve(_repoRoot, ".env") });
@@ -43,7 +40,7 @@ const server = new Server(
     capabilities: {
       tools: {},
     },
-  }
+  },
 );
 
 // ── Tool registry ─────────────────────────────────────────────────────────────

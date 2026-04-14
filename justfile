@@ -5,7 +5,7 @@ set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 # Display the SOTA Industrial Dashboard
 default:
     @$lines = Get-Content '{{justfile()}}'; \
-    Write-Host ' [SOTA] Industrial Operations Dashboard v1.3.2' -ForegroundColor White -BackgroundColor Cyan; \
+    Write-Host ' [SOTA] Industrial Operations Dashboard v1.4.1' -ForegroundColor White -BackgroundColor Cyan; \
     Write-Host '' ; \
     $currentCategory = ''; \
     foreach ($line in $lines) { \
@@ -27,30 +27,40 @@ default:
             } \
         } \
     } \
-    Write-Host "`n  [System State: PROD/HARDENED]" -ForegroundColor DarkGray; \
+    Write-Host "`n  [System State: TS-NATIVE/HARDENING]" -ForegroundColor DarkGray; \
     Write-Host ''
 
 # ── Quality ───────────────────────────────────────────────────────────────────
 
-# Execute Ruff SOTA v13.1 linting
+# Execute Biome quality checks
 lint:
-    Set-Location '{{justfile_directory()}}'
-    uv run ruff check .
+    npm run lint
 
-# Execute Ruff SOTA v13.1 fix and formatting
+# Execute Biome formatting and auto-fixes
 fix:
-    Set-Location '{{justfile_directory()}}'
-    uv run ruff check . --fix --unsafe-fixes
-    uv run ruff format .
+    npm run format
 
-# ── Hardening ─────────────────────────────────────────────────────────────────
+# ── Testing ───────────────────────────────────────────────────────────────────
 
-# Execute Bandit security audit
-check-sec:
-    Set-Location '{{justfile_directory()}}'
-    uv run bandit -r src/
+# Run Vitest suite
+test:
+    npm test
 
-# Execute safety audit of dependencies
-audit-deps:
-    Set-Location '{{justfile_directory()}}'
-    uv run safety check
+# Run tests in watch mode
+test-watch:
+    npm run test:watch
+
+# ── Development ───────────────────────────────────────────────────────────────
+
+# Start Server in watch mode (tsx)
+dev:
+    npm run dev
+
+# Build the production distribution
+build:
+    npm run build
+
+# Start the Industrial Webapp Dashboard
+dashboard:
+    Set-Location 'webapp'
+    npm run dev

@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Send, Bot, User, Trash2, Sparkles, MessageSquare, Loader2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Bot, Loader2, MessageSquare, Send, Sparkles, Trash2, User } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useNexusStore } from "../store";
 
 export function ChatView() {
@@ -58,7 +58,9 @@ export function ChatView() {
           <div className="h-full flex flex-col items-center justify-center text-center opacity-40 py-20">
             <MessageSquare size={48} className="mb-4 text-zinc-700" />
             <p className="text-lg font-medium text-zinc-500">Begin the Cyber-Orchestration.</p>
-            <p className="text-sm text-zinc-600 mt-1 max-w-xs">Ask the agent to tweak your modules, route cables, or generate patterns.</p>
+            <p className="text-sm text-zinc-600 mt-1 max-w-xs">
+              Ask the agent to tweak your modules, route cables, or generate patterns.
+            </p>
           </div>
         ) : (
           chatHistory.map((msg, i) => (
@@ -68,20 +70,26 @@ export function ChatView() {
               animate={{ opacity: 1, y: 0 }}
               className={`flex gap-4 ${msg.role === "assistant" ? "items-start" : "items-start flex-row-reverse"}`}
             >
-              <div className={`mt-1 p-2 rounded-lg border ${
-                msg.role === "assistant" 
-                ? "bg-amber-500/10 border-amber-500/20 text-amber-500" 
-                : "bg-zinc-800 border-zinc-700 text-zinc-400"
-              }`}>
+              <div
+                className={`mt-1 p-2 rounded-lg border ${
+                  msg.role === "assistant"
+                    ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
+                    : "bg-zinc-800 border-zinc-700 text-zinc-400"
+                }`}
+              >
                 {msg.role === "assistant" ? <Bot size={16} /> : <User size={16} />}
               </div>
-              <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${
-                msg.role === "assistant"
-                ? "bg-zinc-900/50 border border-zinc-800 text-zinc-200"
-                : "bg-amber-500 text-zinc-950 font-medium"
-              }`}>
+              <div
+                className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${
+                  msg.role === "assistant"
+                    ? "bg-zinc-900/50 border border-zinc-800 text-zinc-200"
+                    : "bg-amber-500 text-zinc-950 font-medium"
+                }`}
+              >
                 {msg.content}
-                <div className={`text-[9px] mt-2 mono opacity-40 ${msg.role === "assistant" ? "" : "text-zinc-900"}`}>
+                <div
+                  className={`text-[9px] mt-2 mono opacity-40 ${msg.role === "assistant" ? "" : "text-zinc-900"}`}
+                >
                   {new Date(msg.ts).toLocaleTimeString()}
                 </div>
               </div>
@@ -107,7 +115,9 @@ export function ChatView() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          placeholder={isLlmActive ? "Send command to local LLM..." : "Provider offline - Check settings"}
+          placeholder={
+            isLlmActive ? "Send command to local LLM..." : "Provider offline - Check settings"
+          }
           disabled={!isLlmActive || isLoading}
           className="w-full bg-zinc-950/80 border border-zinc-800 rounded-2xl pl-6 pr-14 py-4 text-sm text-zinc-100 placeholder-zinc-700 focus:outline-none focus:border-amber-500/50 transition-all shadow-2xl"
         />
@@ -115,9 +125,11 @@ export function ChatView() {
           onClick={handleSend}
           disabled={!input.trim() || isLoading || !isLlmActive}
           className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all
-            ${input.trim() && isLlmActive && !isLoading
-              ? "bg-amber-500 text-zinc-950 hover:scale-105 active:scale-95"
-              : "bg-zinc-900 text-zinc-700"}`}
+            ${
+              input.trim() && isLlmActive && !isLoading
+                ? "bg-amber-500 text-zinc-950 hover:scale-105 active:scale-95"
+                : "bg-zinc-900 text-zinc-700"
+            }`}
         >
           <Send size={18} />
         </button>

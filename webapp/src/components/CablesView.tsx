@@ -1,9 +1,9 @@
+import { motion } from "framer-motion";
+import { AlertTriangle, Cable, CheckCircle2, Info, Loader2 } from "lucide-react";
 /**
  * CablesView — create audio routing between device sockets.
  */
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Cable, Loader2, CheckCircle2, AlertTriangle, Info } from "lucide-react";
 import { useNexusStore } from "../store";
 
 export function CablesView() {
@@ -25,7 +25,8 @@ export function CablesView() {
       setStatus("error");
       return;
     }
-    setStatus("busy"); setMsg("");
+    setStatus("busy");
+    setMsg("");
     try {
       let cableId = "";
       await doc.modify((t: unknown) => {
@@ -43,7 +44,9 @@ export function CablesView() {
       setToSocket("");
     } catch (err) {
       const m = err instanceof Error ? err.message : String(err);
-      setMsg(m); addLog("error", `Cable create failed: ${m}`); setStatus("error");
+      setMsg(m);
+      addLog("error", `Cable create failed: ${m}`);
+      setStatus("error");
     }
   }
 
@@ -58,9 +61,12 @@ export function CablesView() {
       <div className="flex items-start gap-2 p-3 bg-zinc-900 border border-zinc-800 rounded-lg">
         <Info size={13} className="text-zinc-500 mt-0.5 flex-shrink-0" />
         <p className="text-xs text-zinc-500 leading-relaxed">
-          Socket locations look like <code className="text-zinc-400 mono">entities/abc123/fields/audioOutput</code>.
-          Get them from the Project view entity inspector — look in the <code className="mono text-zinc-400">fields</code> object
-          for keys like <code className="mono text-zinc-400">audioOutput</code>, <code className="mono text-zinc-400">audioInput</code>,
+          Socket locations look like{" "}
+          <code className="text-zinc-400 mono">entities/abc123/fields/audioOutput</code>. Get them
+          from the Project view entity inspector — look in the{" "}
+          <code className="mono text-zinc-400">fields</code> object for keys like{" "}
+          <code className="mono text-zinc-400">audioOutput</code>,{" "}
+          <code className="mono text-zinc-400">audioInput</code>,
           <code className="mono text-zinc-400">masterOutput</code>.
         </p>
       </div>
@@ -107,14 +113,17 @@ export function CablesView() {
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             className={`flex items-start gap-2 p-3 rounded-lg text-sm
-              ${status === "ok"
-                ? "bg-green-500/10 border border-green-500/20 text-green-300"
-                : "bg-red-500/10 border border-red-500/20 text-red-300"
+              ${
+                status === "ok"
+                  ? "bg-green-500/10 border border-green-500/20 text-green-300"
+                  : "bg-red-500/10 border border-red-500/20 text-red-300"
               }`}
           >
-            {status === "ok"
-              ? <CheckCircle2 size={14} className="mt-0.5 flex-shrink-0" />
-              : <AlertTriangle size={14} className="mt-0.5 flex-shrink-0" />}
+            {status === "ok" ? (
+              <CheckCircle2 size={14} className="mt-0.5 flex-shrink-0" />
+            ) : (
+              <AlertTriangle size={14} className="mt-0.5 flex-shrink-0" />
+            )}
             <span className="mono text-xs">{msg}</span>
           </motion.div>
         )}
@@ -126,16 +135,12 @@ export function CablesView() {
             disabled:bg-zinc-700 disabled:text-zinc-500 text-zinc-950 font-semibold
             px-4 py-2.5 rounded-lg text-sm transition-colors"
         >
-          {status === "busy"
-            ? <Loader2 size={14} className="animate-spin" />
-            : <Cable size={14} />}
+          {status === "busy" ? <Loader2 size={14} className="animate-spin" /> : <Cable size={14} />}
           {status === "busy" ? "Creating..." : "Create Cable"}
         </button>
 
         {mode === "offline" && (
-          <p className="text-xs text-zinc-600">
-            Offline mode — cable is local only.
-          </p>
+          <p className="text-xs text-zinc-600">Offline mode — cable is local only.</p>
         )}
       </div>
     </div>

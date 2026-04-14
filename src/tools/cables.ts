@@ -40,15 +40,14 @@ export function registerCableTools(bridge: NexusBridge): McpTool[] {
         required: ["from_socket", "to_socket"],
       },
       handler: async (args) => {
-        const fromSocket = String(args["from_socket"] ?? "");
-        const toSocket = String(args["to_socket"] ?? "");
+        const fromSocket = String(args.from_socket ?? "");
+        const toSocket = String(args.to_socket ?? "");
 
         if (!fromSocket || !toSocket) {
           return {
             success: false,
             error: "Both from_socket and to_socket are required.",
-            hint:
-              "Use nexus_query_entities to inspect device fields and find socket location references.",
+            hint: "Use nexus_query_entities to inspect device fields and find socket location references.",
           };
         }
 

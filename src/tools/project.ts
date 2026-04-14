@@ -53,7 +53,7 @@ export function registerProjectTools(bridge: NexusBridge): McpTool[] {
         required: ["project_url"],
       },
       handler: async (args) => {
-        const projectUrl = String(args["project_url"] ?? "");
+        const projectUrl = String(args.project_url ?? "");
         const session = await bridge.connect(projectUrl);
         return {
           success: true,
@@ -61,9 +61,9 @@ export function registerProjectTools(bridge: NexusBridge): McpTool[] {
           message:
             session.mode === "online"
               ? `Connected online to ${projectUrl}`
-              : `Connected in OFFLINE mode (no AUDIOTOOL_PAT). ` +
-                `Document is local only — changes will NOT sync to Audiotool. ` +
-                `Set AUDIOTOOL_PAT env var and reconnect for live sync.`,
+              : "Connected in OFFLINE mode (no AUDIOTOOL_PAT). " +
+                "Document is local only — changes will NOT sync to Audiotool. " +
+                "Set AUDIOTOOL_PAT env var and reconnect for live sync.",
         };
       },
     },
@@ -152,7 +152,7 @@ export function registerProjectTools(bridge: NexusBridge): McpTool[] {
       },
       handler: async (args) => {
         bridge.requireSession(); // throws if disconnected
-        const entityType = String(args["entity_type"] ?? "");
+        const entityType = String(args.entity_type ?? "");
         const entities = bridge.queryByType(entityType);
         return {
           success: true,

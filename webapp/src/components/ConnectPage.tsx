@@ -1,7 +1,7 @@
+import { motion } from "framer-motion";
+import { AlertTriangle, Loader2, Music2, Plug } from "lucide-react";
 import { useState } from "react";
 import { useNexusStore } from "../store";
-import { Plug, Music2, AlertTriangle, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
 
 export function ConnectPage() {
   const { connect, mode, msg } = useNexusStore();
@@ -9,7 +9,7 @@ export function ConnectPage() {
 
   return (
     <div className="max-w-2xl mx-auto py-12 px-4 h-full flex flex-col justify-center">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="space-y-12"
@@ -27,16 +27,21 @@ export function ConnectPage() {
             </p>
           </div>
         </header>
-        
+
         <div className="glass-panel p-10 space-y-8 relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
-          
+
           <div className="space-y-4">
             <div className="flex justify-between items-end px-1">
-              <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest" id="label-url">Project Handshake URL</label>
+              <label
+                className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest"
+                id="label-url"
+              >
+                Project Handshake URL
+              </label>
               <span className="text-[10px] mono text-zinc-700">v13.0 SOTA</span>
             </div>
-            <input 
+            <input
               type="text"
               aria-labelledby="label-url"
               className="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-5 py-4 text-white placeholder:text-zinc-800 focus:outline-none focus:border-amber-500/50 transition-all font-mono text-sm"
@@ -46,12 +51,12 @@ export function ConnectPage() {
             />
           </div>
 
-          <button 
+          <button
             onClick={() => connect(url)}
-            disabled={mode !== 'disconnected'}
+            disabled={mode !== "disconnected"}
             className="primary-button w-full py-5 text-base"
           >
-            {mode === 'disconnected' ? (
+            {mode === "disconnected" ? (
               <>
                 <Plug size={20} />
                 Establish Secure Session
@@ -64,8 +69,8 @@ export function ConnectPage() {
             )}
           </button>
 
-          {msg && mode === 'disconnected' && (
-            <motion.div 
+          {msg && mode === "disconnected" && (
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="flex items-center gap-3 bg-red-500/5 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm"

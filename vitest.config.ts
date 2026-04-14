@@ -10,7 +10,11 @@ export default defineConfig({
     globals: false,
     testTimeout: 120_000,
     hookTimeout: 120_000,
-    include: ["tests/**/*.integration.test.ts"],
+    include: [
+      "src/**/*.test.ts",
+      "webapp/src/**/*.test.ts",
+      "tests/**/*.integration.test.ts"
+    ],
     setupFiles: [resolve(root, "tests/vitest.setup.ts")],
   },
 });

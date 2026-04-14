@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { PlusCircle, Loader2, CheckCircle2, AlertTriangle, Settings2, Sliders } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertTriangle, CheckCircle2, Loader2, PlusCircle, Settings2, Sliders } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useNexusStore } from "../store";
 
 const INSTRUMENTS = ["heisenberg", "pulverisateur", "bassline", "tonematrix"] as const;
@@ -60,7 +60,9 @@ export function DevicesView() {
           <p className="text-zinc-500 text-sm mt-1">Management and live parameter synthesis.</p>
         </div>
         <div className="text-right">
-          <div className="text-[10px] uppercase tracking-widest font-bold text-zinc-600 mb-1">Active Entities</div>
+          <div className="text-[10px] uppercase tracking-widest font-bold text-zinc-600 mb-1">
+            Active Entities
+          </div>
           <div className="text-2xl font-mono text-amber-500/80">{devices.length}</div>
         </div>
       </div>
@@ -70,20 +72,25 @@ export function DevicesView() {
         <section className="glass-panel p-6 space-y-6">
           <div className="flex items-center gap-2 mb-2">
             <PlusCircle size={18} className="text-amber-500" />
-            <h2 className="text-sm font-bold text-zinc-200 uppercase tracking-wider">Deploy New Device</h2>
+            <h2 className="text-sm font-bold text-zinc-200 uppercase tracking-wider">
+              Deploy New Device
+            </h2>
           </div>
 
           <div>
-            <label className="text-[10px] uppercase font-bold text-zinc-500 block mb-3">Model Selection</label>
+            <label className="text-[10px] uppercase font-bold text-zinc-500 block mb-3">
+              Model Selection
+            </label>
             <div className="grid grid-cols-2 gap-2">
               {ALL_TYPES.map((t) => (
                 <button
                   key={t}
                   onClick={() => setDeviceType(t)}
                   className={`px-3 py-2.5 rounded-lg text-xs mono text-left transition-all border
-                    ${deviceType === t
-                      ? "border-amber-500/50 bg-amber-500/10 text-amber-300"
-                      : "border-zinc-800 bg-zinc-950/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+                    ${
+                      deviceType === t
+                        ? "border-amber-500/50 bg-amber-500/10 text-amber-300"
+                        : "border-zinc-800 bg-zinc-950/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
                     }`}
                 >
                   <span className="mr-2 opacity-50">
@@ -97,7 +104,9 @@ export function DevicesView() {
 
           <div className="space-y-4">
             <div>
-              <label className="text-[10px] uppercase font-bold text-zinc-500 block mb-2">Alias / Label</label>
+              <label className="text-[10px] uppercase font-bold text-zinc-500 block mb-2">
+                Alias / Label
+              </label>
               <input
                 type="text"
                 value={displayName}
@@ -110,7 +119,12 @@ export function DevicesView() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] uppercase font-bold text-zinc-500 block mb-2" id="label-posX">X Coordinate</label>
+                <label
+                  className="text-[10px] uppercase font-bold text-zinc-500 block mb-2"
+                  id="label-posX"
+                >
+                  X Coordinate
+                </label>
                 <input
                   type="number"
                   value={posX}
@@ -121,7 +135,12 @@ export function DevicesView() {
                 />
               </div>
               <div>
-                <label className="text-[10px] uppercase font-bold text-zinc-500 block mb-2" id="label-posY">Y Coordinate</label>
+                <label
+                  className="text-[10px] uppercase font-bold text-zinc-500 block mb-2"
+                  id="label-posY"
+                >
+                  Y Coordinate
+                </label>
                 <input
                   type="number"
                   value={posY}
@@ -142,12 +161,17 @@ export function DevicesView() {
                 exit={{ opacity: 0, height: 0 }}
                 role="alert"
                 className={`flex items-start gap-3 p-4 rounded-xl text-sm border
-                  ${status === "ok"
-                    ? "bg-green-500/5 border-green-500/20 text-green-300/80"
-                    : "bg-red-500/5 border-red-500/20 text-red-300/80"
+                  ${
+                    status === "ok"
+                      ? "bg-green-500/5 border-green-500/20 text-green-300/80"
+                      : "bg-red-500/5 border-red-500/20 text-red-300/80"
                   }`}
               >
-                {status === "ok" ? <CheckCircle2 size={16} className="mt-0.5" /> : <AlertTriangle size={16} className="mt-0.5" />}
+                {status === "ok" ? (
+                  <CheckCircle2 size={16} className="mt-0.5" />
+                ) : (
+                  <AlertTriangle size={16} className="mt-0.5" />
+                )}
                 {msg}
               </motion.div>
             )}
@@ -159,7 +183,11 @@ export function DevicesView() {
             aria-busy={status === "creating"}
             className="primary-button w-full py-3"
           >
-            {status === "creating" ? <Loader2 size={16} className="animate-spin" /> : <PlusCircle size={16} />}
+            {status === "creating" ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <PlusCircle size={16} />
+            )}
             {status === "creating" ? "Synthesizing..." : "Initialize Device"}
           </button>
         </section>
@@ -168,7 +196,9 @@ export function DevicesView() {
         <section className="space-y-4">
           <div className="flex items-center gap-2 mb-2 px-1">
             <Settings2 size={18} className="text-zinc-500" />
-            <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-wider text-muted">Active Instances</h2>
+            <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-wider text-muted">
+              Active Instances
+            </h2>
           </div>
 
           <div className="space-y-3">
@@ -178,9 +208,7 @@ export function DevicesView() {
                 <p className="text-sm italic">No active silicon detected in the project.</p>
               </div>
             ) : (
-              devices.map((dev) => (
-                <DeviceCard key={dev.id} device={dev} />
-              ))
+              devices.map((dev) => <DeviceCard key={dev.id} device={dev} />)
             )}
           </div>
         </section>
@@ -195,10 +223,13 @@ function DeviceCard({ device }: { device: any }) {
 
   // Example parameters based on common Audiotool devices
   const params = useMemo(() => {
-    if (device.type === "heisenberg") return ["osc1Type", "osc1Detune", "filterCutoff", "filterResonance"];
+    if (device.type === "heisenberg")
+      return ["osc1Type", "osc1Detune", "filterCutoff", "filterResonance"];
     if (device.type === "tonematrix") return ["patternIndex", "scale", "rootNote"];
     if (device.type === "stompboxDelay") return ["mix", "feedbackFactor", "delayTime"];
-    return Object.keys(device.fields).filter(f => typeof device.fields[f] === 'number').slice(0, 4);
+    return Object.keys(device.fields)
+      .filter((f) => typeof device.fields[f] === "number")
+      .slice(0, 4);
   }, [device]);
 
   async function updateParam(name: string, value: any) {
@@ -206,7 +237,7 @@ function DeviceCard({ device }: { device: any }) {
     try {
       await doc.modify((t: any) => {
         const entity = t.getEntity(device.id);
-        if (entity && entity.fields[name]) {
+        if (entity?.fields[name]) {
           entity.fields[name].value = value;
         }
       });
@@ -221,21 +252,23 @@ function DeviceCard({ device }: { device: any }) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-zinc-950/50 flex items-center justify-center border border-zinc-800">
-            <span className="text-sm">{INSTRUMENTS.includes(device.type as any) ? "🎹" : "🔧"}</span>
+            <span className="text-sm">
+              {INSTRUMENTS.includes(device.type as any) ? "🎹" : "🔧"}
+            </span>
           </div>
           <div>
             <div className="text-sm font-bold text-zinc-100 tracking-tight">
               {device.fields.displayName || device.type}
             </div>
             <div className="text-[10px] mono text-zinc-600 uppercase tracking-tighter">
-              {device.type} · {device.id.split('/').pop()}
+              {device.type} · {device.id.split("/").pop()}
             </div>
           </div>
         </div>
         <button
           onClick={() => setIsEditing(!isEditing)}
           aria-label={isEditing ? "Close settings" : "Open settings"}
-          className={`p-1.5 rounded-md transition-colors ${isEditing ? 'text-amber-500 bg-amber-500/10' : 'text-zinc-600 hover:text-zinc-300'}`}
+          className={`p-1.5 rounded-md transition-colors ${isEditing ? "text-amber-500 bg-amber-500/10" : "text-zinc-600 hover:text-zinc-300"}`}
         >
           <Settings2 size={14} />
         </button>
@@ -249,11 +282,16 @@ function DeviceCard({ device }: { device: any }) {
             exit={{ opacity: 0, height: 0 }}
             className="space-y-4 pt-2 border-t border-zinc-800/50"
           >
-            {params.map(p => (
+            {params.map((p) => (
               <div key={p} className="space-y-2">
-                <div className="flex justify-between text-[10px] mono uppercase font-bold" id={`label-${device.id}-${p}`}>
+                <div
+                  className="flex justify-between text-[10px] mono uppercase font-bold"
+                  id={`label-${device.id}-${p}`}
+                >
                   <span className="text-zinc-500">{p}</span>
-                  <span className="text-amber-500/80">{Number(device.fields[p]?.value || 0).toFixed(2)}</span>
+                  <span className="text-amber-500/80">
+                    {Number(device.fields[p]?.value || 0).toFixed(2)}
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -262,7 +300,7 @@ function DeviceCard({ device }: { device: any }) {
                   step="0.01"
                   aria-labelledby={`label-${device.id}-${p}`}
                   defaultValue={device.fields[p]?.value || 0}
-                  onChange={(e) => updateParam(p, parseFloat(e.target.value))}
+                  onChange={(e) => updateParam(p, Number.parseFloat(e.target.value))}
                   className="w-full"
                 />
               </div>

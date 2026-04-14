@@ -1,19 +1,19 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Music2,
-  Plug,
-  Cpu,
   ChevronLeft,
   Circle,
-  Sliders,
+  Cpu,
   Disc,
-  Zap,
-  Sparkles,
-  Settings,
+  LayoutGrid,
   LayoutList,
+  Music2,
+  Plug,
+  Settings,
+  Sliders,
+  Sparkles,
   TableProperties,
   TerminalSquare,
-  LayoutGrid,
+  Zap,
 } from "lucide-react";
 import { useNexusStore } from "../store";
 import type { NexusState } from "../store";
@@ -53,8 +53,7 @@ export function Sidebar() {
     disconnected: "bg-zinc-500 text-zinc-500",
   }[mode];
 
-  const modeLabel =
-    mode === "online" ? "Online" : mode === "offline" ? "Offline" : "Disconnected";
+  const modeLabel = mode === "online" ? "Online" : mode === "offline" ? "Offline" : "Disconnected";
 
   return (
     <motion.aside
@@ -62,10 +61,20 @@ export function Sidebar() {
       transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
       className="fixed left-0 top-0 h-screen bg-zinc-950/80 border-r border-zinc-800/50 flex flex-col z-20 overflow-hidden backdrop-blur-xl"
     >
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-6 border-b border-zinc-800/50 min-h-[80px]">
-        <div className="flex-shrink-0 w-9 h-9 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.2)]">
-          <Music2 size={18} className="text-zinc-950" />
+      {/* Header with Logo */}
+      <div className="flex items-center gap-4 px-5 py-8 border-b border-white/[0.03] min-h-[90px]">
+        <div className="relative flex-shrink-0 w-10 h-10">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full"
+          />
+          <img
+            src="/logo.png"
+            alt="Nexus Logo"
+            className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]"
+          />
         </div>
         <AnimatePresence>
           {sidebarOpen && (
@@ -89,15 +98,13 @@ export function Sidebar() {
 
       {/* Status pill */}
       <div className="px-4 py-4">
-        <div
-          className="flex items-center gap-3 px-3 py-2 rounded-xl border border-white/5 transition-all bg-white/[0.03]"
-        >
+        <div className="flex items-center gap-3 px-3 py-2 rounded-xl border border-white/5 transition-all bg-white/[0.03]">
           <div className="relative flex items-center justify-center">
-            <Circle size={8} className={`z-10 fill-current ${statusClasses.split(' ')[0]}`} />
-            <motion.div 
+            <Circle size={8} className={`z-10 fill-current ${statusClasses.split(" ")[0]}`} />
+            <motion.div
               animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className={`absolute w-4 h-4 rounded-full ${statusDotClass.split(' ')[0]}`}
+              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+              className={`absolute w-4 h-4 rounded-full ${statusDotClass.split(" ")[0]}`}
             />
           </div>
           <AnimatePresence>
@@ -106,7 +113,7 @@ export function Sidebar() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className={`text-[10px] uppercase font-bold tracking-wider ${statusClasses.split(' ')[0]}`}
+                className={`text-[10px] uppercase font-bold tracking-wider ${statusClasses.split(" ")[0]}`}
               >
                 {modeLabel}
               </motion.span>
@@ -128,14 +135,18 @@ export function Sidebar() {
               title={item.label}
               className={`
                 w-full flex items-center gap-4 px-3 py-3 rounded-xl text-sm transition-all duration-200
-                ${active
-                  ? "bg-amber-500/10 text-amber-500 shadow-[inset_0_0_10px_rgba(245,158,11,0.05)] border border-amber-500/10"
-                  : disabled
-                  ? "text-zinc-800 cursor-not-allowed grayscale"
-                  : "text-zinc-500 hover:bg-white/5 hover:text-zinc-200 border border-transparent hover:border-white/5"}
+                ${
+                  active
+                    ? "bg-amber-500/10 text-amber-500 shadow-[inset_0_0_10px_rgba(245,158,11,0.05)] border border-amber-500/10"
+                    : disabled
+                      ? "text-zinc-800 cursor-not-allowed grayscale"
+                      : "text-zinc-500 hover:bg-white/5 hover:text-zinc-200 border border-transparent hover:border-white/5"
+                }
               `}
             >
-              <span className={`flex-shrink-0 transition-transform duration-200 ${active ? 'scale-110 shadow-amber-500/50' : 'opacity-70'}`}>
+              <span
+                className={`flex-shrink-0 transition-transform duration-200 ${active ? "scale-110 shadow-amber-500/50" : "opacity-70"}`}
+              >
                 {item.icon}
               </span>
               <AnimatePresence>
@@ -144,7 +155,7 @@ export function Sidebar() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className={`whitespace-nowrap flex-1 text-left font-medium tracking-tight ${active ? 'text-zinc-100' : ''}`}
+                    className={`whitespace-nowrap flex-1 text-left font-medium tracking-tight ${active ? "text-zinc-100" : ""}`}
                   >
                     {item.label}
                   </motion.span>

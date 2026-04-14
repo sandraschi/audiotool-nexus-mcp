@@ -66,8 +66,8 @@ export function registerTimelineTools(bridge: NexusBridge): McpTool[] {
         required: ["device_id"],
       },
       handler: async (args) => {
-        const deviceId = String(args["device_id"] ?? "");
-        const order = Number(args["order"] ?? 0);
+        const deviceId = String(args.device_id ?? "");
+        const order = Number(args.order ?? 0);
 
         let createdTrackId: string | null = null;
 
@@ -117,16 +117,15 @@ export function registerTimelineTools(bridge: NexusBridge): McpTool[] {
           duration_ticks: {
             type: "number",
             description:
-              "Duration in ticks. Ticks.SemiBreve = 1 bar (4/4). " +
-              "4 * SemiBreve = 4 bars.",
+              "Duration in ticks. Ticks.SemiBreve = 1 bar (4/4). " + "4 * SemiBreve = 4 bars.",
           },
         },
         required: ["track_id", "position_ticks", "duration_ticks"],
       },
       handler: async (args) => {
-        const trackId = String(args["track_id"] ?? "");
-        const posTicks = Number(args["position_ticks"] ?? 0);
-        const durTicks = Number(args["duration_ticks"] ?? Ticks.SemiBreve);
+        const trackId = String(args.track_id ?? "");
+        const posTicks = Number(args.position_ticks ?? 0);
+        const durTicks = Number(args.duration_ticks ?? Ticks.SemiBreve);
 
         let createdRegionId: string | null = null;
 
