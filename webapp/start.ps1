@@ -1,3 +1,13 @@
+﻿Param([switch]$Headless)
+
+# --- SOTA Headless Standard ---
+if ($Headless -and ($Host.UI.RawUI.WindowTitle -notmatch 'Hidden')) {
+    Start-Process pwsh -ArgumentList '-NoProfile', '-File', $PSCommandPath, '-Headless' -WindowStyle Hidden
+    exit
+}
+$WindowStyle = if ($Headless) { 'Hidden' } else { 'Normal' }
+# ------------------------------
+
 <#
 .SYNOPSIS
     Start audiotool-nexus-mcp webapp (port 10900)
@@ -36,3 +46,4 @@ if (-not (Test-Path "node_modules")) {
 # Start webapp
 Write-Host "Starting webapp on http://localhost:$WebPort ..." -ForegroundColor Green
 npm run dev
+

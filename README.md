@@ -1,5 +1,7 @@
 # Audiotool Nexus MCP (SOTA 14.1)
 
+[![Linted with Biome](https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat-square&logo=biome&logoColor=white)](https://biomejs.dev/) [![Built with Just](https://img.shields.io/badge/Built_with-Just-000000?style=flat-square&logo=gnu-bash&logoColor=white)](https://github.com/casey/just)
+
 ![Audiotool Nexus Logo](file:///C:/Users/sandr/.gemini/antigravity/brain/97a950ab-822d-4106-b124-640a786adf30/nexus_logo_premium_1776123216232.png)
 
 A high-performance **MCP Server** and **Industrial Dashboard** for the **[Audiotool NEXUS SDK](https://developer.audiotool.com)**. This node provides a bidirectional bridge between AI agents and the Audiotool modular DAW ecosystem.

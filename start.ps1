@@ -1,3 +1,13 @@
+﻿Param([switch]$Headless)
+
+# --- SOTA Headless Standard ---
+if ($Headless -and ($Host.UI.RawUI.WindowTitle -notmatch 'Hidden')) {
+    Start-Process pwsh -ArgumentList '-NoProfile', '-File', $PSCommandPath, '-Headless' -WindowStyle Hidden
+    exit
+}
+$WindowStyle = if ($Headless) { 'Hidden' } else { 'Normal' }
+# ------------------------------
+
 <#
 .SYNOPSIS
     Primary launcher for audiotool-nexus-mcp (MCP Server + Webapp)
@@ -25,3 +35,4 @@ if (Test-Path $WebappLauncher) {
 } else {
     Write-Error "Webapp launcher not found at $WebappLauncher"
 }
+
