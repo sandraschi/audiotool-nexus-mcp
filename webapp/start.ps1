@@ -43,7 +43,7 @@ if (-not (Test-Path "node_modules")) {
     npm install
 }
 
-# Start webapp
-Write-Host "Starting webapp on http://localhost:$WebPort ..." -ForegroundColor Green
-npm run dev
+# Start webapp (bind 127.0.0.1 so fleet probe can reach it)
+Write-Host "Starting webapp on http://127.0.0.1:$WebPort ..." -ForegroundColor Green
+npm run dev -- --host 127.0.0.1 --port $WebPort --strictPort
 
