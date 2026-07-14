@@ -106,7 +106,7 @@ export function Sidebar() {
               transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
               className={`absolute w-4 h-4 rounded-full ${statusDotClass.split(" ")[0]}`}
             />
-          </div>
+          </div>          <button type="button" onClick={() => setCollapsed(!collapsed)} className="ml-auto p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" title={collapsed ? "Expand" : "Collapse"}>{collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}</button>
           <AnimatePresence>
             {sidebarOpen && (
               <motion.span

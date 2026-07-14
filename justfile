@@ -1,4 +1,5 @@
-﻿set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
+set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
+import 'scripts/just/fleet.just'
 
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 
@@ -40,4 +41,3 @@ build:
 dashboard:
     Set-Location 'webapp'
     npm run dev
-
