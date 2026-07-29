@@ -1,56 +1,37 @@
-Â´â•-â”Param([switch]$Headless)
+﻿# Fleet unified launcher - do not edit logic here.
+# Change fleet-start.config.ps1 at the repo root instead.
+param(
+    [switch]$Headless,
+    [switch]$BackendOnly,
+    [switch]$FrontendOnly,
+    [switch]$NoBrowser,
+    [switch]$ReuseIfRunning
+)
 
-# --- SOTA Headless Standard ---
-if ($Headless -and ($Host.UI.RawUI.WindowTitle -notmatch 'Hidden')) {
-    Start-Process pwsh -ArgumentList '-NoProfile', '-File', $PSCommandPath, '-Headless' -WindowStyle Hidden
-    exit
-}
-$WindowStyle = if ($Headless) { 'Hidden' } else { 'Normal' }
-# ------------------------------
-
-<#
-.SYNOPSIS
-    Start audiotool-nexus-mcp webapp (port 10900)
-.DESCRIPTION
-    Clears port, installs deps if needed, runs Vite dev server.
-    Follows SOTA startup pattern from AGENT_PROTOCOLS.md.
-#>
-
-$ErrorActionPreference = "Stop"
-$WebPort = 10900
-$FleetStartPath = Join-Path $ProjectRoot "scripts\FleetStartMode.ps1"
-if (-not (Test-Path -LiteralPath $FleetStartPath)) {
-    Write-Host "ERROR: Missing vendored launcher helper: $FleetStartPath" -ForegroundColor Red
+$ErrorActionPreference = 'Stop'
+$ReposRoot = if ($env:FLEET_REPOS_ROOT) { $env:FLEET_REPOS_ROOT } else { 'D:\Dev\repos' }
+$EnginePath = Join-Path $ReposRoot 'mcp-central-docs\scripts\Invoke-FleetWebappStart.ps1'
+if (-not (Test-Path -LiteralPath $EnginePath)) {
+    Write-Host "ERROR: Missing fleet start engine: $EnginePath" -ForegroundColor Red
     exit 1
 }
-. $FleetStartPath
+. $EnginePath
 
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-
-Write-Host "audiotool-nexus-mcp webapp startup" -ForegroundColor Cyan
-Write-Host "Port: $WebPort" -ForegroundColor Gray
-
-# Clear port zombies
-Write-Host "Clearing port $WebPort..." -ForegroundColor Gray
-try {
-    $connections = Get-NetTCPConnection -LocalPort $WebPort -ErrorAction SilentlyContinue
-    if ($connections) {
-        foreach ($conn in $connections) {
-            Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue
-        }
-        Write-Host "Cleared existing process on port $WebPort" -ForegroundColor Yellow
+$configCandidates = @(
+    (Join-Path $PSScriptRoot 'fleet-start.config.ps1'),
+    (Join-Path (Split-Path -Parent $PSScriptRoot) 'fleet-start.config.ps1')
+)
+$configPath = $null
+foreach ($candidate in $configCandidates) {
+    if (Test-Path -LiteralPath $candidate) {
+        $configPath = $candidate
+        break
     }
-} catch {
-    Write-Host "Port clear: $($_)" -ForegroundColor Gray
+}
+if (-not $configPath) {
+    Write-Host 'ERROR: Missing fleet-start.config.ps1 (repo root or beside start.ps1).' -ForegroundColor Red
+    exit 1
 }
 
-# Install dependencies if needed
-if (-not (Test-Path "node_modules")) {
-    Write-Host "Installing webapp dependencies..." -ForegroundColor Yellow
-    npm install
-}
-
-# Start webapp (bind 127.0.0.1 so fleet probe can reach it)
-Write-Host "Starting webapp on http://127.0.0.1:$WebPort ..." -ForegroundColor Green
-npm run dev -- --host 127.0.0.1 --port $WebPort --strictPort
+Start-FleetWebapp @PSBoundParameters -ConfigPath $configPath -LauncherRoot $PSScriptRoot
 
