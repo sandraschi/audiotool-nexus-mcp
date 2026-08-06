@@ -1,7 +1,8 @@
 ﻿Param([switch]$Headless)
 
 # --- SOTA Headless Standard ---
-if ($Headless -and ($Host.UI.RawUI.WindowTitle -notmatch 'Hidden')) {
+if ($Headless -and -not $env:AUDIOTOOL_NEXUS_HEADLESS_HANDOFF) {
+    $env:AUDIOTOOL_NEXUS_HEADLESS_HANDOFF = '1'
     Start-Process pwsh -ArgumentList '-NoProfile', '-File', $PSCommandPath, '-Headless' -WindowStyle Hidden
     exit
 }

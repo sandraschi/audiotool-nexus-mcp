@@ -1,13 +1,13 @@
-set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
+set windows-shell := ["powershell.exe", "-NoProfile", "-Command"]
 import 'scripts/just/fleet.just'
 
-# ── Dashboard ─────────────────────────────────────────────────────────────────
+# --- Dashboard ---
 
 # Open the interactive recipe dashboard in the browser
 default:
     @just --list
 
-# ── Quality ───────────────────────────────────────────────────────────────────
+# --- Quality ---
 
 # Execute Biome quality checks
 lint:
@@ -17,7 +17,7 @@ lint:
 fix:
     npm run format
 
-# ── Testing ───────────────────────────────────────────────────────────────────
+# --- Testing ---
 
 # Run Vitest suite
 test:
@@ -27,7 +27,7 @@ test:
 test-watch:
     npm run test:watch
 
-# ── Development ───────────────────────────────────────────────────────────────
+# --- Development ---
 
 # Start Server in watch mode (tsx)
 dev:
@@ -41,3 +41,9 @@ build:
 dashboard:
     Set-Location 'webapp'
     npm run dev
+
+# Bootstrap: install dev deps + pre-commit hook
+bootstrap:
+    uv sync --group dev
+    uv run pre-commit install
+    Write-Host "Pre-commit hooks installed." -ForegroundColor Green

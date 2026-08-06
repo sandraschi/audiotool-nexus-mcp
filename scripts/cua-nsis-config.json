@@ -1,0 +1,14 @@
+{
+    "product_name": "Audiotool Nexus MCP",
+    "install_dir": "%LOCALAPPDATA%\\Audiotool Nexus MCP",
+    "operator_exe": "audiotool-nexus-mcp-native.exe",
+    "backend_process_names": ["audiotool-nexus-mcp-native", "audiotool-nexus-mcp-backend"],
+    "backend_port": 10700,
+    "health_path": "/api/v1/health",
+    "diagnostics_path": "/api/v1/diagnostics",
+    "feature_smoke_path": "/api/v1/system/info",
+    "window_title_re": "Audiotool Nexus MCP",
+    "nsis_glob": "native/target/release/bundle/nsis/Audiotool Nexus MCP_*_x64-setup.exe",
+    "bridge_ok_text": "REST bridge reachable",
+    "uninstall_registry_filter": "*Audiotool Nexus MCP*"
+}
