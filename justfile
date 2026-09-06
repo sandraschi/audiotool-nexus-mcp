@@ -39,8 +39,7 @@ build:
 
 # Start the Industrial Webapp Dashboard
 dashboard:
-    Set-Location 'webapp'
-    npm run dev
+    Set-Location 'webapp'; npm run dev
 
 # Bootstrap: install dev deps + pre-commit hook
 bootstrap:
